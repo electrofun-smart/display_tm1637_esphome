@@ -1,0 +1,685 @@
+[
+    {
+        "id": "ef2b540.de8b3b",
+        "type": "tab",
+        "label": "Display TM1637",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "60e52823.2d6308",
+        "type": "inject",
+        "z": "ef2b540.de8b3b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 150,
+        "y": 300,
+        "wires": [
+            [
+                "ed560f8f.40731"
+            ]
+        ]
+    },
+    {
+        "id": "ed560f8f.40731",
+        "type": "http request",
+        "z": "ef2b540.de8b3b",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/weatherdata/forecast?aggregateHours=1&combinationMethod=aggregate&contentType=json&unitGroup=metric&locationMode=single&key=yourkeyhere&dataElements=default&locations=Indaiatuba%2C%20Brazil",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "x": 370,
+        "y": 300,
+        "wires": [
+            [
+                "3dd4bcf9.8d5944",
+                "8dacb6e7.589398"
+            ]
+        ]
+    },
+    {
+        "id": "138844e8.e5e11b",
+        "type": "debug",
+        "z": "ef2b540.de8b3b",
+        "name": "Temperature",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 750,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "3dd4bcf9.8d5944",
+        "type": "function",
+        "z": "ef2b540.de8b3b",
+        "name": "Temperature",
+        "func": "msg.payload = Math.round( msg.payload.location.currentConditions.temp );\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 570,
+        "y": 300,
+        "wires": [
+            [
+                "138844e8.e5e11b",
+                "f120978d.a31158"
+            ]
+        ]
+    },
+    {
+        "id": "8dacb6e7.589398",
+        "type": "function",
+        "z": "ef2b540.de8b3b",
+        "name": "Humidity",
+        "func": "msg.payload = Math.round( msg.payload.location.currentConditions.humidity );\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 560,
+        "y": 420,
+        "wires": [
+            [
+                "2601ea37.5998f6",
+                "ca571899.9e4c98"
+            ]
+        ]
+    },
+    {
+        "id": "2601ea37.5998f6",
+        "type": "debug",
+        "z": "ef2b540.de8b3b",
+        "name": "Humidity",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 740,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "e30e68d6.708628",
+        "type": "inject",
+        "z": "ef2b540.de8b3b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "0 6-20 * * *",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 150,
+        "y": 100,
+        "wires": [
+            [
+                "6becb38d.a1611c"
+            ]
+        ]
+    },
+    {
+        "id": "d1810955.9c4958",
+        "type": "http request",
+        "z": "ef2b540.de8b3b",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://www.googleapis.com/youtube/v3/channels?part=statistics&id={{{channel}}}&fields=items/statistics/subscriberCount&key={{{apikey}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "x": 570,
+        "y": 100,
+        "wires": [
+            [
+                "eb568c65.ba36"
+            ]
+        ]
+    },
+    {
+        "id": "7ceb4a9d.4b7984",
+        "type": "debug",
+        "z": "ef2b540.de8b3b",
+        "name": "subscriberCount",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1020,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "6becb38d.a1611c",
+        "type": "function",
+        "z": "ef2b540.de8b3b",
+        "name": "Request Setup",
+        "func": "//Your API key for the Youtube Data API\nmsg.apikey = \"yourAPIkeyhere\";\n\n//Channel ID's in a comma seperated list\nmsg.channel = \"yourchannelIDhere\";\n\n\nreturn msg;\n\n/*\nLook for more details in the official documents\nhere:\nhttps://developers.google.com/youtube/v3/docs/channels/list#usage\n*/",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 380,
+        "y": 100,
+        "wires": [
+            [
+                "d1810955.9c4958"
+            ]
+        ]
+    },
+    {
+        "id": "112f7e92.7b37d1",
+        "type": "comment",
+        "z": "ef2b540.de8b3b",
+        "name": "YOUTUBE API - Subscriber Count Only",
+        "info": "",
+        "x": 210,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "e8a78ee6.f5b63",
+        "type": "comment",
+        "z": "ef2b540.de8b3b",
+        "name": "Weather API",
+        "info": "",
+        "x": 110,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "f950bc8c.3c441",
+        "type": "mqtt out",
+        "z": "ef2b540.de8b3b",
+        "name": "",
+        "topic": "esphome1/subscribers",
+        "qos": "0",
+        "retain": "",
+        "broker": "d885fdcf.e5475",
+        "x": 1040,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "ca571899.9e4c98",
+        "type": "mqtt out",
+        "z": "ef2b540.de8b3b",
+        "name": "",
+        "topic": "esphome1/humidity",
+        "qos": "0",
+        "retain": "",
+        "broker": "d885fdcf.e5475",
+        "x": 770,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "f120978d.a31158",
+        "type": "mqtt out",
+        "z": "ef2b540.de8b3b",
+        "name": "",
+        "topic": "esphome1/temperature",
+        "qos": "0",
+        "retain": "",
+        "broker": "d885fdcf.e5475",
+        "x": 790,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "aed6ab63.2f2368",
+        "type": "mqtt in",
+        "z": "ef2b540.de8b3b",
+        "name": "Trigger from ESPHome1",
+        "topic": "esphome1/trigger",
+        "qos": "0",
+        "datatype": "utf8",
+        "broker": "d885fdcf.e5475",
+        "x": 130,
+        "y": 180,
+        "wires": [
+            [
+                "6becb38d.a1611c",
+                "ed560f8f.40731",
+                "98ecee09.3d4f7"
+            ]
+        ]
+    },
+    {
+        "id": "eb568c65.ba36",
+        "type": "function",
+        "z": "ef2b540.de8b3b",
+        "name": "Parse JSON",
+        "func": "msg.payload = msg.payload.items[0].statistics.subscriberCount;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 770,
+        "y": 100,
+        "wires": [
+            [
+                "f950bc8c.3c441",
+                "7ceb4a9d.4b7984"
+            ]
+        ]
+    },
+    {
+        "id": "ec8add77.2b30e",
+        "type": "mqtt out",
+        "z": "ef2b540.de8b3b",
+        "name": "",
+        "topic": "esphome1/mode",
+        "qos": "0",
+        "retain": "",
+        "broker": "d885fdcf.e5475",
+        "x": 330,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "f46a4d9b.2d5a5",
+        "type": "inject",
+        "z": "ef2b540.de8b3b",
+        "name": "clock",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "0",
+        "payloadType": "num",
+        "x": 110,
+        "y": 440,
+        "wires": [
+            [
+                "ec8add77.2b30e"
+            ]
+        ]
+    },
+    {
+        "id": "681600a4.96c82",
+        "type": "inject",
+        "z": "ef2b540.de8b3b",
+        "name": "countdown",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1",
+        "payloadType": "num",
+        "x": 300,
+        "y": 440,
+        "wires": [
+            [
+                "ec8add77.2b30e"
+            ]
+        ]
+    },
+    {
+        "id": "6240a740.b92fa8",
+        "type": "mqtt out",
+        "z": "ef2b540.de8b3b",
+        "name": "",
+        "topic": "esphome1/minutesadd",
+        "qos": "0",
+        "retain": "",
+        "broker": "d885fdcf.e5475",
+        "x": 300,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "26d49e11.e6bbc2",
+        "type": "inject",
+        "z": "ef2b540.de8b3b",
+        "name": "Minutes",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1",
+        "payloadType": "str",
+        "x": 110,
+        "y": 620,
+        "wires": [
+            [
+                "6240a740.b92fa8"
+            ]
+        ]
+    },
+    {
+        "id": "f3666769.da7b88",
+        "type": "mqtt out",
+        "z": "ef2b540.de8b3b",
+        "name": "",
+        "topic": "esphome1/minutessub",
+        "qos": "0",
+        "retain": "",
+        "broker": "d885fdcf.e5475",
+        "x": 760,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "76989d55.92e574",
+        "type": "inject",
+        "z": "ef2b540.de8b3b",
+        "name": "Minutes",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1",
+        "payloadType": "str",
+        "x": 570,
+        "y": 620,
+        "wires": [
+            [
+                "f3666769.da7b88"
+            ]
+        ]
+    },
+    {
+        "id": "59bdd9aa.1b9fb8",
+        "type": "mqtt out",
+        "z": "ef2b540.de8b3b",
+        "name": "",
+        "topic": "esphome1/start",
+        "qos": "0",
+        "retain": "",
+        "broker": "d885fdcf.e5475",
+        "x": 520,
+        "y": 740,
+        "wires": []
+    },
+    {
+        "id": "c108f2f.35ebe1",
+        "type": "inject",
+        "z": "ef2b540.de8b3b",
+        "name": "Start/Pause",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1",
+        "payloadType": "str",
+        "x": 330,
+        "y": 740,
+        "wires": [
+            [
+                "59bdd9aa.1b9fb8"
+            ]
+        ]
+    },
+    {
+        "id": "5f3dee23.44cb4",
+        "type": "ui_switch",
+        "z": "ef2b540.de8b3b",
+        "name": "Mode",
+        "label": "Mode Countdown or Info",
+        "tooltip": "",
+        "group": "d571d7da.1197b8",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "decouple": "false",
+        "topic": "payload",
+        "topicType": "msg",
+        "style": "",
+        "onvalue": "1",
+        "onvalueType": "num",
+        "onicon": "fa-hourglass-start",
+        "oncolor": "#00FF00",
+        "offvalue": "0",
+        "offvalueType": "num",
+        "officon": "fa-info",
+        "offcolor": "#0000FF",
+        "animate": true,
+        "x": 110,
+        "y": 500,
+        "wires": [
+            [
+                "ec8add77.2b30e"
+            ]
+        ]
+    },
+    {
+        "id": "d58e032a.49044",
+        "type": "ui_button",
+        "z": "ef2b540.de8b3b",
+        "name": "",
+        "group": "d571d7da.1197b8",
+        "order": 4,
+        "width": 2,
+        "height": 1,
+        "passthru": false,
+        "label": "Up",
+        "tooltip": "",
+        "color": "#FFFFFF",
+        "bgcolor": "#000000",
+        "icon": "",
+        "payload": "1",
+        "payloadType": "num",
+        "topic": "payload",
+        "topicType": "msg",
+        "x": 90,
+        "y": 660,
+        "wires": [
+            [
+                "6240a740.b92fa8"
+            ]
+        ]
+    },
+    {
+        "id": "9c5e3bc0.8f0028",
+        "type": "ui_button",
+        "z": "ef2b540.de8b3b",
+        "name": "",
+        "group": "d571d7da.1197b8",
+        "order": 6,
+        "width": 2,
+        "height": 1,
+        "passthru": false,
+        "label": "Down",
+        "tooltip": "",
+        "color": "#FFFFFF",
+        "bgcolor": "#000000",
+        "icon": "",
+        "payload": "1",
+        "payloadType": "num",
+        "topic": "payload",
+        "topicType": "msg",
+        "x": 550,
+        "y": 660,
+        "wires": [
+            [
+                "f3666769.da7b88"
+            ]
+        ]
+    },
+    {
+        "id": "f168848b.d39418",
+        "type": "comment",
+        "z": "ef2b540.de8b3b",
+        "name": "Web Interface Control",
+        "info": "",
+        "x": 120,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "83f7b2a.8de9a5",
+        "type": "ui_text",
+        "z": "ef2b540.de8b3b",
+        "group": "d571d7da.1197b8",
+        "order": 3,
+        "width": 6,
+        "height": 1,
+        "name": "",
+        "label": "CountDown Timer Control",
+        "format": "",
+        "layout": "row-spread",
+        "x": 150,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "98ecee09.3d4f7",
+        "type": "debug",
+        "z": "ef2b540.de8b3b",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 390,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "d20bfd6b.b96be",
+        "type": "ui_button",
+        "z": "ef2b540.de8b3b",
+        "name": "",
+        "group": "d571d7da.1197b8",
+        "order": 8,
+        "width": 2,
+        "height": 1,
+        "passthru": false,
+        "label": "Start/Pause",
+        "tooltip": "",
+        "color": "#FFFFFF",
+        "bgcolor": "#00FF00",
+        "icon": "",
+        "payload": "1",
+        "payloadType": "num",
+        "topic": "payload",
+        "topicType": "msg",
+        "x": 310,
+        "y": 780,
+        "wires": [
+            [
+                "59bdd9aa.1b9fb8"
+            ]
+        ]
+    },
+    {
+        "id": "d885fdcf.e5475",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "mosquitto",
+        "broker": "127.0.0.1",
+        "port": "8883",
+        "clientid": "DVES_node-red-raspberry",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "d571d7da.1197b8",
+        "type": "ui_group",
+        "z": "",
+        "name": "Display TM1637",
+        "tab": "164f4140.7b5f7f",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "164f4140.7b5f7f",
+        "type": "ui_tab",
+        "z": "",
+        "name": "Display Dashboard",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    }
+]
