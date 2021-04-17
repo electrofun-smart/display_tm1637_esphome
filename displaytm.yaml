@@ -1,0 +1,197 @@
+esphome:
+  name: displaytm
+  platform: ESP8266
+  board: d1_mini
+  on_boot:
+    priority: -100
+    # ...
+    then:
+      - mqtt.publish:
+         topic: esphome1/trigger
+         payload: "ESPHome boot, trigger APIs read now!"
+      - logger.log: "Published after boot"
+
+wifi:
+  ssid: "myWifiId"
+  password: "mywifipassword"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Displaytm Fallback Hotspot"
+    password: "MuM2nTqgsDuB"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+# api:
+
+ota:
+
+mqtt:
+  broker: xxxx.duckdns.org
+  username: xxxxx
+  password: yyyyy
+  port: 8883
+  client_id: DVES_esphome1
+  id: mqtt_client
+  on_message:
+    - topic: esphome1/minutesadd
+      qos: 0
+      then:
+         lambda: |-
+           id(myminutes) = id(myminutes) + 1;
+           id(myseconds) = 0;
+           if (id(myminutes) > 99){
+            id(myminutes) = 0;
+           }
+    - topic: esphome1/minutessub
+      qos: 0
+      then:
+         lambda: |-
+          if (id(myminutes) != 0){
+              id(myminutes) = id(myminutes) - 1;
+              id(myseconds) = 0;
+          } else {
+            if (id(myseconds) == 0){
+               id(myseconds) = 59;  
+            } else {
+               id(myseconds) = id(myseconds) - 1;
+               if (id(myseconds) < 0){
+                   id(myseconds) = 0;
+                   id(myminutes) = 10;
+               }
+            }
+          }
+    - topic: esphome1/start
+      qos: 0
+      then:
+         lambda: |-
+          id(mystart) = (id(mystart) == 0) ? 1 : 0;
+    - topic: esphome1/temperature
+      qos: 0
+      then: 
+         lambda: |-
+          id(mytemperature) = atoi(x.c_str()); // x holds the payload received by MQTT
+    - topic: esphome1/humidity
+      qos: 0
+      then:
+         lambda: |-
+          id(myhumidity) = atoi(x.c_str()); 
+    - topic: esphome1/subscribers
+      qos: 0
+      then:
+         lambda: |-
+          id(mysubscribers) = atoi(x.c_str());
+    - topic: esphome1/mode
+      qos: 0
+      then:
+         lambda: |-
+          id(mymode) = atoi(x.c_str());
+
+globals:
+  # time state
+  - id: time_state
+    type: int
+  - id: myseconds
+    type: int
+  - id: myminutes
+    type: int
+    initial_value: "10"
+  - id: mystart
+    type: int
+  - id: mytemperature
+    type: int
+    restore_value: yes
+  - id: myhumidity
+    type: int
+    restore_value: yes
+  - id: mysubscribers
+    type: int
+    restore_value: yes
+  - id: mymode
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+time:
+  - platform: sntp
+    id: sntp_time
+    on_time:
+      # Every 10 seconds
+      - seconds: /10
+        then:
+          lambda: |-
+           id(time_state) += 1;
+           if (id(time_state) > 3) {
+              id(time_state) = 0;
+           }
+      - seconds: /1
+        then:
+          lambda: |-
+            if (id(mystart) == 1) {
+               id(myseconds) = id(myseconds) - 1;
+            }
+
+display:
+  platform: tm1637
+  clk_pin: D6
+  dio_pin: D5
+  intensity: 3
+  update_interval: 500ms
+  lambda: |-
+    if (id(mymode) == 1) { // 1 is countdown
+          if (id(mystart) == 1) {
+            if (id(myseconds) < 0) {
+              id(myseconds) = 59;
+              id(myminutes) = id(myminutes) - 1;
+              if (id(myminutes) < 0 ) {
+                 id(mystart) = 0;
+                 it.print("----");
+              }
+            }
+            if (id(mystart) > 0) {
+              it.printf(0, "%02i", id(myminutes));
+              it.printf(1, ".%02i", id(myseconds));
+            }
+          } else {
+
+            if (id(myminutes) < 0){
+                it.print("----");
+            } else {
+                //id(myseconds) = 0;
+                it.printf(0, "%02i", id(myminutes));
+                it.printf(1, ".%02i", id(myseconds));
+            }
+          }
+    } else { // 0 is digital clock and other infos
+            switch(id(time_state)) {
+            case 0: // Show temp
+                it.printf(0,"%02i",id(mytemperature));
+                it.printf(2,"~C");
+            break;
+            case 1: // Show Humidity 
+                it.printf(0,"%02i",id(myhumidity));
+                it.printf(2,"~o");
+            break;
+            case 2: // Show clock
+                static int i = 0;
+                i++;
+                if ((i % 2) == 0)
+                    it.strftime("%H.%M", id(sntp_time).now());
+                else
+                    it.strftime("%H%M", id(sntp_time).now());
+            break;
+            case 3: // Show Youtube Subscribers Count received by MQTT
+                static int d = 0;
+                d++;
+                if ((d % 2) == 0)
+                    it.print("5ub");
+                else
+                    it.printf(0, "%04i", id(mysubscribers));
+            break;
+            }
+    }
+    
